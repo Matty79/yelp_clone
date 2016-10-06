@@ -2,30 +2,10 @@ require 'rails_helper'
 
 feature 'restaurants' do
   context 'no restaurants have been added' do
-    before do
-      visit '/'
-      click_link('Sign up')
-      fill_in('Email', with: 'test@example.com')
-      fill_in('Password', with: 'testtest')
-      fill_in('Password confirmation', with: 'testtest')
-      click_button('Sign up')
-    end
     scenario 'should display a prompt to add a restaurant' do
       visit('/restaurants')
       expect(page).to have_content('No restaurants yet')
       expect(page).to have_link('Add a restaurant')
-    end
-  end
-
-  context 'restaurants have been added' do
-    before do
-      Restaurant.create(name: 'KFC')
-    end
-    scenario 'display restaurants' do
-      Capybara.reset_sessions!
-      visit('/restaurants')
-      expect(page).to have_content('KFC')
-      expect(page).not_to have_content('No restaurants yet')
     end
   end
 
@@ -43,8 +23,9 @@ feature 'restaurants' do
       click_link('Add a restaurant')
       fill_in('Name', with: 'KFC')
       click_button('Create Restaurant')
-      expect(page).to have_content('KFC')
       expect(current_path).to eq('/restaurants')
+      expect(page).not_to have_content('No restaurants yet')
+      expect(page).to have_content('KFC')
     end
 
     scenario 'anonymous user is not allowed to create a restaurant' do
@@ -52,7 +33,6 @@ feature 'restaurants' do
       visit('/restaurants')
       click_link("Add a restaurant")
       expect(page).to have_content("You need to sign in or sign up before continuing.")
-
     end
 
     context 'an invalid restaurant' do
@@ -69,8 +49,7 @@ feature 'restaurants' do
 
   context 'viewing restaurants' do
     let!(:kfc) { Restaurant.create(name: 'KFC') }
-    scenario 'lets a user view a restaurant' do
-      Capybara.reset_sessions!
+    scenario 'lets anonymous user view a restaurant' do
       visit('/restaurants')
       click_link('KFC')
       expect(page).to have_content 'KFC'
@@ -103,33 +82,49 @@ feature 'restaurants' do
     end
 
     scenario "user cannot edit a restaurant they haven't added" do
-      click_link 'Sign out'
+      click_link('Sign out')
       click_link('Sign up')
       fill_in('Email', with: 'test1@example.com')
       fill_in('Password', with: 'happier')
       fill_in('Password confirmation', with: 'happier')
       click_button('Sign up')
-      expect(page).to have_content 'KFC'
-      click_link 'Edit KFC'
+      expect(page).to have_content('KFC')
+      click_link('Edit KFC')
+      click_button('Update Restaurant')
       expect(page).to have_content 'Sorry, you can only edit your own restaurants'
     end
   end
 
   context 'deleting restaurants' do
     before do
-      Restaurant.create name: 'KFC', description: 'Deep fried goodness!'
       visit '/'
       click_link('Sign up')
       fill_in('Email', with: 'test@example.com')
       fill_in('Password', with: 'testtest')
       fill_in('Password confirmation', with: 'testtest')
       click_button('Sign up')
+      click_link('Add a restaurant')
+      fill_in('Name', with: 'KFC')
+      click_button('Create Restaurant')
     end
     scenario 'removes restaurant when user clicks delete link' do
       visit '/restaurants'
       click_link 'Delete KFC'
       expect(page).not_to have_content 'KFC'
       expect(page).to have_content 'Restaurant deleted successfully'
+    end
+
+    scenario "user cannot edit a restaurant they haven't added" do
+      visit '/'
+      click_link('Sign out')
+      click_link('Sign up')
+      fill_in('Email', with: 'test1@example.com')
+      fill_in('Password', with: 'happier')
+      fill_in('Password confirmation', with: 'happier')
+      click_button('Sign up')
+      expect(page).to have_content('KFC')
+      click_link('Delete KFC')
+      expect(page).to have_content 'Sorry, you can only delete your own restaurants'
     end
   end
 
