@@ -114,7 +114,7 @@ feature 'restaurants' do
       expect(page).to have_content 'Restaurant deleted successfully'
     end
 
-    scenario "user cannot edit a restaurant they haven't added" do
+    scenario "user cannot delete a restaurant they haven't added" do
       visit '/'
       click_link('Sign out')
       click_link('Sign up')
