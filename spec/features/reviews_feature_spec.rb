@@ -39,6 +39,10 @@ feature 'reviewing' do
       fill_in('Comments', with: "Greasy horrible food")
       select '1', from: 'Rating'
       click_button 'Leave Review'
+      click_link('Review KFC')
+      fill_in('Comments', with: "Greasy horrible food")
+      select '1', from: 'Rating'
+      click_button 'Leave Review'
       expect(current_path).to eq '/restaurants'
       expect(page).to have_content "You have already reviewed this restaurant"
     end

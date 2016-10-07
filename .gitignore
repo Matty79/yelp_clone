@@ -12,3 +12,4 @@
 !/log/.keep
 /tmp
 facebook_secrets.yml
+.env
